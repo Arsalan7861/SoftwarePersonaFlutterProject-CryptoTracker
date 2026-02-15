@@ -38,7 +38,7 @@ class _DetailScreenState extends State<DetailScreen> {
         ),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        backgroundColor: Colors.blueGrey,
+        backgroundColor: Colors.black87,
         duration: const Duration(seconds: 1),
       ),
     );
@@ -46,63 +46,203 @@ class _DetailScreenState extends State<DetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isPositive = widget.coin.priceChange24h >= 0;
+
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.coin.name),
         actions: [
           IconButton(
-            icon: Icon(_isFavorite ? Icons.star : Icons.star_border),
+            icon: Icon(
+              _isFavorite ? Icons.star : Icons.star_border,
+              color: _isFavorite ? Colors.amber : Colors.white,
+            ),
             onPressed: _toggleFavorite,
           ),
         ],
       ),
       body: SafeArea(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.all(16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Center(
-                child: Hero(
-                  tag: widget.coin.id,
-                  child: Image.network(
-                    widget.coin.image,
-                    height: 100,
-                    width: 100,
+              // Price Card
+              _buildCard(
+                child: Column(
+                  children: [
+                    Hero(
+                      tag: widget.coin.id,
+                      child: Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.grey[100],
+                          shape: BoxShape.circle,
+                        ),
+                        child: Image.network(
+                          widget.coin.image,
+                          height: 80,
+                          width: 80,
+                          errorBuilder: (context, error, stackTrace) =>
+                              const Icon(Icons.currency_bitcoin, size: 80),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      widget.coin.symbol.toUpperCase(),
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.grey[600],
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      '\$${widget.coin.currentPrice.toStringAsFixed(2)}',
+                      style: const TextStyle(
+                        fontSize: 36,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: isPositive
+                            ? Colors.green.shade50
+                            : Colors.red.shade50,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            isPositive
+                                ? Icons.trending_up
+                                : Icons.trending_down,
+                            color: isPositive ? Colors.green : Colors.red,
+                            size: 20,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            '${isPositive ? '+' : ''}${widget.coin.priceChange24h.toStringAsFixed(2)}%',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: isPositive ? Colors.green : Colors.red,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '24h Change',
+                      style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // Market Stats Card
+              _buildCard(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.bar_chart_rounded,
+                          color: Colors.grey[700],
+                          size: 22,
+                        ),
+                        const SizedBox(width: 8),
+                        const Text(
+                          'Market Stats',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const Divider(height: 24),
+                    _buildStatRow('Symbol', widget.coin.symbol.toUpperCase()),
+                    _buildStatRow('Coin ID', widget.coin.id),
+                    _buildStatRow(
+                      'Current Price',
+                      '\$${widget.coin.currentPrice.toStringAsFixed(2)}',
+                    ),
+                    _buildStatRow(
+                      '24h Change',
+                      '${isPositive ? '+' : ''}${widget.coin.priceChange24h.toStringAsFixed(2)}%',
+                      valueColor: isPositive ? Colors.green : Colors.red,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // Watchlist Action Card
+              _buildCard(
+                child: InkWell(
+                  onTap: _toggleFavorite,
+                  borderRadius: BorderRadius.circular(12),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: _isFavorite
+                                ? Colors.amber.shade50
+                                : Colors.grey[100],
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Icon(
+                            _isFavorite ? Icons.star : Icons.star_border,
+                            color: _isFavorite ? Colors.amber : Colors.grey,
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                _isFavorite
+                                    ? 'In Your Watchlist'
+                                    : 'Add to Watchlist',
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                _isFavorite
+                                    ? 'Tap to remove from watchlist'
+                                    : 'Track this coin\'s performance',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: Colors.grey[600],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Icon(Icons.chevron_right, color: Colors.grey[400]),
+                      ],
+                    ),
                   ),
                 ),
               ),
-              const SizedBox(height: 20),
-              Center(
-                child: Text(
-                  '\$${widget.coin.currentPrice.toStringAsFixed(2)}',
-                  style: const TextStyle(
-                    fontSize: 32,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 10),
-              Center(
-                child: Text(
-                  '${widget.coin.priceChange24h.toStringAsFixed(2)}% (24h)',
-                  style: TextStyle(
-                    fontSize: 18,
-                    color: widget.coin.priceChange24h >= 0
-                        ? Colors.green
-                        : Colors.red,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 30),
-              const Text(
-                'Market Stats',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 10),
-              _buildStatRow('Symbol', widget.coin.symbol.toUpperCase()),
-              _buildStatRow('Coin ID', widget.coin.id),
             ],
           ),
         ),
@@ -110,16 +250,40 @@ class _DetailScreenState extends State<DetailScreen> {
     );
   }
 
-  Widget _buildStatRow(String label, String value) {
+  Widget _buildCard({required Widget child}) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.shade300,
+            spreadRadius: 1,
+            blurRadius: 5,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: child,
+    );
+  }
+
+  Widget _buildStatRow(String label, String value, {Color? valueColor}) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      padding: const EdgeInsets.symmetric(vertical: 10.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: const TextStyle(fontSize: 16, color: Colors.grey)),
+          Text(label, style: TextStyle(fontSize: 15, color: Colors.grey[600])),
           Text(
             value,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w600,
+              color: valueColor ?? Colors.black87,
+            ),
           ),
         ],
       ),
