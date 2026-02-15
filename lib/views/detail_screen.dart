@@ -63,10 +63,13 @@ class _DetailScreenState extends State<DetailScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Center(
-                child: Image.network(
-                  widget.coin.image,
-                  height: 100,
-                  width: 100,
+                child: Hero(
+                  tag: widget.coin.id,
+                  child: Image.network(
+                    widget.coin.image,
+                    height: 100,
+                    width: 100,
+                  ),
                 ),
               ),
               const SizedBox(height: 20),

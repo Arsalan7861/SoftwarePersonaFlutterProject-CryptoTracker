@@ -23,11 +23,15 @@ class CoinTile extends StatelessWidget {
         ],
       ),
       child: ListTile(
-        leading: Image.network(
-          coin.image,
-          width: 40,
-          height: 40,
-          errorBuilder: (context, error, stackTrace) => const Icon(Icons.error),
+        leading: Hero(
+          tag: coin.id,
+          child: Image.network(
+            coin.image,
+            width: 40,
+            height: 40,
+            errorBuilder: (context, error, stackTrace) =>
+                const Icon(Icons.error),
+          ),
         ),
         title: Text(
           coin.name,
